@@ -7,10 +7,10 @@ namespace Syterra.Kata.OCR {
             this.ocrGlyph = ocrGlyph;
         }
 
-        public bool IsRecognized => ocrGlyphs.ContainsKey(ocrGlyph);
+        public bool IsLegible => ocrGlyphs.ContainsKey(ocrGlyph);
 
         public override string ToString() {
-            return ocrGlyphs[ocrGlyph];
+            return IsLegible ? ocrGlyphs[ocrGlyph] : "?";
         }
 
         readonly string ocrGlyph;

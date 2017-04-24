@@ -1,6 +1,6 @@
 ﻿namespace Syterra.Kata.OCR {
     public class Checksum {
-        public static object IsValid(string input) {
+        public static bool IsValid(string input) {
             var sum = 0;
             var count = 9;
             foreach (var digit in input) {

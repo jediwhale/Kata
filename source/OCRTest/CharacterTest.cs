@@ -15,10 +15,17 @@ namespace Syterra.Kata.OCRTest {
         [TestCase(Glyphs.Seven, "7")]
         [TestCase(Glyphs.Eight, "8")]
         [TestCase(Glyphs.Nine, "9")]
-        public void GlyphIsRecognized(string glyph, string result) {
+        public void GlyphIsLegible(string glyph, string result) {
             var character = new Character(glyph);
-            Assert.IsTrue(character.IsRecognized);
+            Assert.IsTrue(character.IsLegible);
             Assert.AreEqual(result, character.ToString());
+        }
+
+        [Test]
+        public void GlyphIsNotLegible() {
+            var character = new Character("garbage");
+            Assert.IsFalse(character.IsLegible);
+            Assert.AreEqual("?", character.ToString());
         }
     }
 }

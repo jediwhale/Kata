@@ -37,7 +37,7 @@ namespace Syterra.Kata.OCRTest {
 
         static void AssertParses(IEnumerable<string> input, string expected) {
             var numbers = Parser.Parse(input);
-            var result = string.Join(",", numbers.Select(n => n.ToString()));
+            var result = string.Join(",", numbers.Select(n => n.Display));
             Assert.AreEqual(expected, result);
         }
     }
