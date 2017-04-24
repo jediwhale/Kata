@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AccountNumberTest.cs" />
     <Compile Include="CharacterTest.cs" />
+    <Compile Include="ChecksumTest.cs" />
     <Compile Include="ParserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
