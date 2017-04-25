@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 using Syterra.Kata.OCR;
 
 namespace Syterra.Kata.OCRTest {
@@ -26,6 +27,12 @@ namespace Syterra.Kata.OCRTest {
             var character = new Character("garbage");
             Assert.IsFalse(character.IsLegible);
             Assert.AreEqual("?", character.ToString());
+        }
+
+        [TestCase(Glyphs.Eight, "0,8,9,6")]
+        [TestCase(Glyphs.Nine, "3,5,8,9")]
+        public void HasPossibleValues(string glyph, string expected) {
+            Assert.AreEqual(expected, string.Join(",", new Character(glyph).Possibles.Select(c => c.ToString())));
         }
     }
 }

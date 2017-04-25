@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 
 namespace Syterra.Kata.OCR {
     public class Character {
@@ -11,6 +13,12 @@ namespace Syterra.Kata.OCR {
 
         public override string ToString() {
             return IsLegible ? ocrGlyphs[ocrGlyph] : "?";
+        }
+
+        public IEnumerable<string> Possibles => ocrGlyphs.Keys.OfType<string>().Where(Matches).Select(g => ocrGlyphs[g]);
+
+        bool Matches(string candidate) {
+            return candidate.Where((t, i) => t != ocrGlyph[i]).Count() < 2;
         }
 
         readonly string ocrGlyph;
