@@ -20,7 +20,7 @@ namespace KingTest {
         public bool IsKingInCheck => pieces.Select(IsPieceAttackingKing).Any(IsTrue);
 
         bool IsPieceAttackingKing(KeyValuePair<Square, char> pieceLocation) {
-            return Rules.PieceAttacks[pieceLocation.Value]().Select(line => DoesLineAttackKing(line, pieceLocation.Key)).Any(IsTrue);
+            return Rules.PieceAttacks[pieceLocation.Value].Select(line => DoesLineAttackKing(line, pieceLocation.Key)).Any(IsTrue);
         }
 
         bool DoesLineAttackKing(Func<Square, IEnumerable<Square>> lineOfAttack, Square location) {
@@ -55,19 +55,19 @@ namespace KingTest {
             return $"[{row},{column}]";
         }
 
-        const int noSquare = int.MinValue;
+        const int noSquare = -999999999;
 
         static bool IsValid(int coordinate) {
             return coordinate >= 0 && coordinate < ChessBoard.Size;
         }
 
-        readonly int row;
-        readonly int column;
-
         Square(int row, int column) {
             this.row =  row;
             this.column = column;
         }
+
+        readonly int row;
+        readonly int column;
     }
 
     public struct Movement {
@@ -75,6 +75,18 @@ namespace KingTest {
         public static Movement Right = new Movement(0, 1);
         public static Movement Up = new Movement(-1, 0);
         public static Movement Down = new Movement(1, 0);
+        public static Movement UpLeft = new Movement(-1, -1);
+        public static Movement UpRight = new Movement(-1, 1);
+        public static Movement DownLeft = new Movement(1, -1);
+        public static Movement DownRight = new Movement(1, 1);
+        public static Movement UpUpLeft = new Movement(-2, -1);
+        public static Movement UpUpRight = new Movement(-2, 1);
+        public static Movement DownDownLeft = new Movement(2, -1);
+        public static Movement DownDownRight = new Movement(2, 1);
+        public static Movement UpLeftLeft = new Movement(-1, -2);
+        public static Movement UpRightRight = new Movement(-1, 2);
+        public static Movement DownLeftLeft = new Movement(1, -2);
+        public static Movement DownRightRight = new Movement(1, 2);
 
         public Square Apply(int row, int column) {
             return Square.Make(row + rowMovement, column + columnMovement);
@@ -90,82 +102,56 @@ namespace KingTest {
     }
 
     public static class Rules {
-        public static readonly Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> PieceAttacks
-            = new Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> {
-                {'B', BishopAttacks},
-                {'K', KingAttacks},
-                {'N', KnightAttacks},
-                {'P', PawnAttacks},
-                {'Q', QueenAttacks},
-                {'R', RookAttacks}
+        public static readonly Dictionary<char, IEnumerable<Func<Square, IEnumerable<Square>>>> PieceAttacks
+            = new Dictionary<char, IEnumerable<Func<Square, IEnumerable<Square>>>> {
+                {'B', new Func<Square, IEnumerable<Square>>[] {
+                    DiagonalUpLeft, DiagonalUpRight, DiagonalDownLeft, DiagonalDownRight
+                }},
+                {'K', new Func<Square, IEnumerable<Square>>[] {}},
+                {'N', new Func<Square, IEnumerable<Square>>[] {
+                    KnightUpUpLeft, KnightUpUpRight, KnightDownDownLeft, KnightDownDownRight, KnightUpLeftLeft, KnightUpRightRight, KnightDownLeftLeft, KnightDownRightRight
+                }},
+                {'P', new Func<Square, IEnumerable<Square>>[] {
+                    PawnLeft, PawnRight
+                }},
+                {'Q', new Func<Square, IEnumerable<Square>>[] {
+                    StraightUp, StraightLeft, StraightRight, StraightDown, DiagonalUpLeft, DiagonalUpRight, DiagonalDownLeft, DiagonalDownRight
+                }},
+                {'R', new Func<Square, IEnumerable<Square>>[] {
+                    StraightUp, StraightLeft, StraightRight, StraightDown
+                }}
             };
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> BishopAttacks() {
-            yield return DiagonalUpLeft;
-            yield return DiagonalUpRight;
-            yield return DiagonalDownLeft;
-            yield return DiagonalDownRight;
-        }
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> RookAttacks() {
-            yield return StraightUp;
-            yield return StraightLeft;
-            yield return StraightRight;
-            yield return StraightDown;
-        }
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> QueenAttacks() {
-            yield return StraightUp;
-            yield return StraightLeft;
-            yield return StraightRight;
-            yield return StraightDown;
-            yield return DiagonalUpLeft;
-            yield return DiagonalUpRight;
-            yield return DiagonalDownLeft;
-            yield return DiagonalDownRight;
-        }
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> KnightAttacks() {
-            yield return KnightUpUpLeft;
-            yield return KnightUpUpRight;
-            yield return KnightDownDownLeft;
-            yield return KnightDownDownRight;
-            yield return KnightUpLeftLeft;
-            yield return KnightUpRightRight;
-            yield return KnightDownLeftLeft;
-            yield return KnightDownRightRight;
-        }
 
         static IEnumerable<Square> KnightUpUpLeft(Square location) {
-            yield return location.Move(Movement.Up).Move(Movement.Up).Move(Movement.Left);
+            yield return location.Move(Movement.UpUpLeft);
         }
 
         static IEnumerable<Square> KnightUpUpRight(Square location) {
-            yield return location.Move(Movement.Up).Move(Movement.Up).Move(Movement.Right);
+            yield return location.Move(Movement.UpUpRight);
         }
 
         static IEnumerable<Square> KnightDownDownLeft(Square location) {
-            yield return location.Move(Movement.Down).Move(Movement.Down).Move(Movement.Left);
+            yield return location.Move(Movement.DownDownLeft);
         }
 
         static IEnumerable<Square> KnightDownDownRight(Square location) {
-            yield return location.Move(Movement.Down).Move(Movement.Down).Move(Movement.Right);
+            yield return location.Move(Movement.DownDownRight);
         }
 
         static IEnumerable<Square> KnightUpLeftLeft(Square location) {
-            yield return location.Move(Movement.Up).Move(Movement.Left).Move(Movement.Left);
+            yield return location.Move(Movement.UpLeftLeft);
         }
 
         static IEnumerable<Square> KnightUpRightRight(Square location) {
-            yield return location.Move(Movement.Up).Move(Movement.Right).Move(Movement.Right);
+            yield return location.Move(Movement.UpRightRight);
         }
 
         static IEnumerable<Square> KnightDownLeftLeft(Square location) {
-            yield return location.Move(Movement.Down).Move(Movement.Left).Move(Movement.Left);
+            yield return location.Move(Movement.DownLeftLeft);
         }
 
         static IEnumerable<Square> KnightDownRightRight(Square location) {
-            yield return location.Move(Movement.Down).Move(Movement.Right).Move(Movement.Right);
+            yield return location.Move(Movement.DownRightRight);
         }
         
         static IEnumerable<Square> StraightUp(Square location) {
@@ -185,46 +171,35 @@ namespace KingTest {
         }
         
         static IEnumerable<Square> DiagonalUpLeft(Square location) {
-            return MultipleMoves(location, Movement.Up, Movement.Left);
+            return MultipleMoves(location, Movement.UpLeft);
         }
         
         static IEnumerable<Square> DiagonalUpRight(Square location) {
-            return MultipleMoves(location, Movement.Up, Movement.Right);
+            return MultipleMoves(location, Movement.UpRight);
         }
         
         static IEnumerable<Square> DiagonalDownLeft(Square location) {
-            return MultipleMoves(location, Movement.Down, Movement.Left);
+            return MultipleMoves(location, Movement.DownLeft);
         }
         
         static IEnumerable<Square> DiagonalDownRight(Square location) {
-            return MultipleMoves(location, Movement.Down, Movement.Right);
+            return MultipleMoves(location, Movement.DownRight);
         }
         
-        static IEnumerable<Square> MultipleMoves(Square location, params Movement[] movements) {
+        static IEnumerable<Square> MultipleMoves(Square location, Movement movement) {
             var current = location;
             for (var i = 0; i < ChessBoard.Size - 1; i++) {
-                for (var j = 0; j < movements.Length; j++) {
-                    current = current.Move(movements[j]);
-                }
+                current = current.Move(movement);
                 yield return current;
             }
         }
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> KingAttacks() {
-            yield break;
-        }
-        
-        static IEnumerable<Func<Square, IEnumerable<Square>>> PawnAttacks() {
-            yield return PawnLeft;
-            yield return PawnRight;
-        }
 
         static IEnumerable<Square> PawnLeft(Square location) {
-            yield return location.Move(Movement.Left).Move(Movement.Down);
+            yield return location.Move(Movement.DownLeft);
         }
 
         static IEnumerable<Square> PawnRight(Square location) {
-            yield return location.Move(Movement.Right).Move(Movement.Down);
+            yield return location.Move(Movement.DownRight);
         }
     }
 
@@ -329,15 +304,21 @@ namespace KingTest {
         }
 
         [Test]
+        public void UpMovementIsCalculated() {
+            Assert.AreEqual(Square.Make(2,3), Square.Make(3,3).Move(Movement.Up));
+            Assert.AreEqual(Square.None, Square.Make(0,3).Move(Movement.Up));
+        }
+
+        [Test]
         public void PawnCapturesAreGenerated() {
-            var captures = Rules.PieceAttacks['P']().ToList();
+            var captures = Rules.PieceAttacks['P'].ToList();
             AssertCaptures(captures[0], Square.Make(4,2));
             AssertCaptures(captures[1], Square.Make(4,4));
         }
 
         [Test]
         public void BishopCapturesAreGenerated() {
-            var captures = Rules.PieceAttacks['B']().ToList();
+            var captures = Rules.PieceAttacks['B'].ToList();
             AssertCaptures(captures[0], Square.Make(2,2), Square.Make(1,1), Square.Make(0,0), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[1], Square.Make(2,4), Square.Make(1,5), Square.Make(0,6), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[2], Square.Make(4,2), Square.Make(5,1), Square.Make(6,0), Square.None, Square.None, Square.None, Square.None);
@@ -346,7 +327,7 @@ namespace KingTest {
 
         [Test]
         public void RookCapturesAreGenerated() {
-            var captures = Rules.PieceAttacks['R']().ToList();
+            var captures = Rules.PieceAttacks['R'].ToList();
             AssertCaptures(captures[0], Square.Make(2,3), Square.Make(1,3), Square.Make(0,3), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[1], Square.Make(3,2), Square.Make(3,1), Square.Make(3,0), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[2], Square.Make(3,4), Square.Make(3,5), Square.Make(3,6), Square.Make(3,7), Square.None, Square.None, Square.None);
@@ -355,7 +336,7 @@ namespace KingTest {
 
         [Test]
         public void QueenCapturesAreGenerated() {
-            var captures = Rules.PieceAttacks['Q']().ToList();
+            var captures = Rules.PieceAttacks['Q'].ToList();
             AssertCaptures(captures[0], Square.Make(2,3), Square.Make(1,3), Square.Make(0,3), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[1], Square.Make(3,2), Square.Make(3,1), Square.Make(3,0), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[2], Square.Make(3,4), Square.Make(3,5), Square.Make(3,6), Square.Make(3,7), Square.None, Square.None, Square.None);
@@ -368,7 +349,7 @@ namespace KingTest {
 
         [Test]
         public void KnightCapturesAreGenerated() {
-            var captures = Rules.PieceAttacks['N']().ToList();
+            var captures = Rules.PieceAttacks['N'].ToList();
             AssertCaptures(captures[0], Square.Make(1,2));
             AssertCaptures(captures[1], Square.Make(1,4));
             AssertCaptures(captures[2], Square.Make(5,2));
