@@ -83,6 +83,7 @@ namespace KingTest {
     public struct Movement {
         public static Movement Left = new Movement(0, -1);
         public static Movement Right = new Movement(0, 1);
+        public static Movement Up = new Movement(-1, 0);
         public static Movement Down = new Movement(1, 0);
 
         public Square Apply(int row, int column) {
@@ -101,9 +102,43 @@ namespace KingTest {
     public static class Rules {
         public static readonly Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> PieceAttacks
             = new Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> {
+                {'B', BishopAttacks},
                 {'K', KingAttacks},
                 {'P', PawnAttacks}
             };
+        
+        static IEnumerable<Func<Square, IEnumerable<Square>>> BishopAttacks() {
+            yield return DiagonalUpLeft;
+            yield return DiagonalUpRight;
+            yield return DiagonalDownLeft;
+            yield return DiagonalDownRight;
+        }
+        
+        static IEnumerable<Square> DiagonalUpLeft(Square location) {
+            return MultipleMoves(location, Movement.Up, Movement.Left);
+        }
+        
+        static IEnumerable<Square> DiagonalUpRight(Square location) {
+            return MultipleMoves(location, Movement.Up, Movement.Right);
+        }
+        
+        static IEnumerable<Square> DiagonalDownLeft(Square location) {
+            return MultipleMoves(location, Movement.Down, Movement.Left);
+        }
+        
+        static IEnumerable<Square> DiagonalDownRight(Square location) {
+            return MultipleMoves(location, Movement.Down, Movement.Right);
+        }
+        
+        static IEnumerable<Square> MultipleMoves(Square location, params Movement[] movements) {
+            var current = location;
+            for (var i = 0; i < ChessBoard.Size - 1; i++) {
+                for (var j = 0; j < movements.Length; j++) {
+                    current = current.Move(movements[j]);
+                }
+                yield return current;
+            }
+        }
         
         static IEnumerable<Func<Square, IEnumerable<Square>>> KingAttacks() {
             yield break;
@@ -125,6 +160,7 @@ namespace KingTest {
 
     [TestFixture]
     public class IntegrationTest {
+        
         [Test]
         public void CheckByPawn() {
             AssertCheck(true, 
@@ -136,6 +172,19 @@ namespace KingTest {
                 "   K    ",
                 "        ",
                 "        ");
+        }
+        
+        [Test]
+        public void CheckByBishop() {
+            AssertCheck(true, 
+                "       B",
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                "K       ");
         }
 
         void AssertCheck(bool expected, params string[] rows) {
@@ -179,14 +228,25 @@ namespace KingTest {
         [Test]
         public void PawnCapturesAreGenerated() {
             var captures = Rules.PieceAttacks['P']().ToList();
-            AssertOneCapture(Square.Make(4,2), captures[0]);
-            AssertOneCapture(Square.Make(4,4), captures[1]);
+            AssertCaptures(captures[0], Square.Make(4,2));
+            AssertCaptures(captures[1], Square.Make(4,4));
         }
 
-        static void AssertOneCapture(Square expected, Func<Square, IEnumerable<Square>> generator) {
+        [Test]
+        public void BishopCapturesAreGenerated() {
+            var captures = Rules.PieceAttacks['B']().ToList();
+            AssertCaptures(captures[0], Square.Make(2,2), Square.Make(1,1), Square.Make(0,0), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[1], Square.Make(2,4), Square.Make(1,5), Square.Make(0,6), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[2], Square.Make(4,2), Square.Make(5,1), Square.Make(6,0), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[3], Square.Make(4,4), Square.Make(5,5), Square.Make(6,6), Square.Make(7,7), Square.None, Square.None, Square.None);
+        }
+ 
+        static void AssertCaptures(Func<Square, IEnumerable<Square>> generator, params Square[] expected) {
             var squares = generator(Square.Make(3, 3)).ToList();
-            Assert.AreEqual(1, squares.Count);
-            Assert.AreEqual(expected, squares[0]);
+            Assert.AreEqual(expected.Length, squares.Count);
+            for (var i = 0; i < expected.Length; i++) {
+                Assert.AreEqual(expected[i], squares[i]);
+            }
         }
     }
 }
