@@ -96,6 +96,7 @@ namespace KingTest {
                 {'K', KingAttacks},
                 {'N', KnightAttacks},
                 {'P', PawnAttacks},
+                {'Q', QueenAttacks},
                 {'R', RookAttacks}
             };
         
@@ -111,6 +112,17 @@ namespace KingTest {
             yield return StraightLeft;
             yield return StraightRight;
             yield return StraightDown;
+        }
+        
+        static IEnumerable<Func<Square, IEnumerable<Square>>> QueenAttacks() {
+            yield return StraightUp;
+            yield return StraightLeft;
+            yield return StraightRight;
+            yield return StraightDown;
+            yield return DiagonalUpLeft;
+            yield return DiagonalUpRight;
+            yield return DiagonalDownLeft;
+            yield return DiagonalDownRight;
         }
         
         static IEnumerable<Func<Square, IEnumerable<Square>>> KnightAttacks() {
@@ -270,6 +282,19 @@ namespace KingTest {
                 "        ",
                 "N       ");
         }
+        
+        [Test]
+        public void CheckByQueen() {
+            AssertCheck(true, 
+                "        ",
+                "        ",
+                "        ",
+                " Q     K",
+                "        ",
+                "        ",
+                "        ",
+                "        ");
+        }
 
         static void AssertCheck(bool expected, params string[] rows) {
             var squares = new char[8, 8];
@@ -326,6 +351,19 @@ namespace KingTest {
             AssertCaptures(captures[1], Square.Make(3,2), Square.Make(3,1), Square.Make(3,0), Square.None, Square.None, Square.None, Square.None);
             AssertCaptures(captures[2], Square.Make(3,4), Square.Make(3,5), Square.Make(3,6), Square.Make(3,7), Square.None, Square.None, Square.None);
             AssertCaptures(captures[3], Square.Make(4,3), Square.Make(5,3), Square.Make(6,3), Square.Make(7,3), Square.None, Square.None, Square.None);
+        }
+
+        [Test]
+        public void QueenCapturesAreGenerated() {
+            var captures = Rules.PieceAttacks['Q']().ToList();
+            AssertCaptures(captures[0], Square.Make(2,3), Square.Make(1,3), Square.Make(0,3), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[1], Square.Make(3,2), Square.Make(3,1), Square.Make(3,0), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[2], Square.Make(3,4), Square.Make(3,5), Square.Make(3,6), Square.Make(3,7), Square.None, Square.None, Square.None);
+            AssertCaptures(captures[3], Square.Make(4,3), Square.Make(5,3), Square.Make(6,3), Square.Make(7,3), Square.None, Square.None, Square.None);
+            AssertCaptures(captures[4], Square.Make(2,2), Square.Make(1,1), Square.Make(0,0), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[5], Square.Make(2,4), Square.Make(1,5), Square.Make(0,6), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[6], Square.Make(4,2), Square.Make(5,1), Square.Make(6,0), Square.None, Square.None, Square.None, Square.None);
+            AssertCaptures(captures[7], Square.Make(4,4), Square.Make(5,5), Square.Make(6,6), Square.Make(7,7), Square.None, Square.None, Square.None);
         }
 
         [Test]
