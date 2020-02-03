@@ -4,15 +4,50 @@ using System.Linq;
 using NUnit.Framework;
 
 namespace KingTest {
-    public class Board {
+    public class ChessBoard {
         public const int Size = 8;
+        
         public static IEnumerable<Square> Squares {
             get {
-                for (var row = 0; row < Size; row++)
-                for (var col = 0; col < Size; col++)
-                    yield return Square.Make(row, col);
+                for (var row = 0; row < Size; row++) {
+                    for (var col = 0; col < Size; col++) {
+                        yield return Square.Make(row, col);
+                    }
+                }
             }
         }
+
+        public ChessBoard(char[,] contents) {
+            for (var row = 0; row < Size; row++) {
+                for (var col = 0; col < Size; col++) {
+                    if (contents[row, col] != ' ') {
+                        pieces.Add(Square.Make(row, col), contents[row, col]);
+                    }
+                }
+            }
+        }
+
+        public bool IsKingInCheck => pieces.Select(IsPieceAttackingKing).Any(IsTrue);
+
+        bool IsPieceAttackingKing(KeyValuePair<Square, char> pieceLocation) {
+            return Rules.PieceAttacks[pieceLocation.Value]().Select(line => DoesLineAttackKing(line, pieceLocation.Key)).Any(IsTrue);
+        }
+
+        bool DoesLineAttackKing(Func<Square, IEnumerable<Square>> lineOfAttack, Square location) {
+            return lineOfAttack(location).Select(ContentOfSquare).Aggregate(AggregateTargetPiece) == 'K';
+        }
+
+        char ContentOfSquare(Square location) {
+            return pieces.ContainsKey(location) ? pieces[location] : ' ';
+        }
+
+        static char AggregateTargetPiece(char previous, char current) {
+            return previous != ' ' ? previous : current;
+        }
+
+        static bool IsTrue(bool result) { return result;}
+
+        readonly Dictionary<Square, char> pieces = new Dictionary<Square, char>();
     }
 
     public struct Square {
@@ -33,7 +68,7 @@ namespace KingTest {
         const int noSquare = int.MinValue;
 
         static bool IsValid(int coordinate) {
-            return coordinate >= 0 && coordinate < Board.Size;
+            return coordinate >= 0 && coordinate < ChessBoard.Size;
         }
 
         readonly int row;
@@ -64,7 +99,17 @@ namespace KingTest {
     }
 
     public static class Rules {
-        public static IEnumerable<Func<Square, IEnumerable<Square>>> PawnCaptures() {
+        public static readonly Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> PieceAttacks
+            = new Dictionary<char, Func<IEnumerable<Func<Square, IEnumerable<Square>>>>> {
+                {'K', KingAttacks},
+                {'P', PawnAttacks}
+            };
+        
+        static IEnumerable<Func<Square, IEnumerable<Square>>> KingAttacks() {
+            yield break;
+        }
+        
+        static IEnumerable<Func<Square, IEnumerable<Square>>> PawnAttacks() {
             yield return PawnLeft;
             yield return PawnRight;
         }
@@ -77,12 +122,37 @@ namespace KingTest {
             yield return location.Move(Movement.Right).Move(Movement.Down);
         }
     }
+
+    [TestFixture]
+    public class IntegrationTest {
+        [Test]
+        public void CheckByPawn() {
+            AssertCheck(true, 
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                "    P   ",
+                "   K    ",
+                "        ",
+                "        ");
+        }
+
+        void AssertCheck(bool expected, params string[] rows) {
+            var squares = new char[8, 8];
+            for (var row = 0; row < 8; row++)
+            for (var col = 0; col < 8; col++)
+                squares[row, col] = rows[row][col];
+            Assert.AreEqual(expected, new ChessBoard(squares).IsKingInCheck);
+                
+        }
+    }
     
     [TestFixture]
     public class Test {
         [Test]
         public void SquaresAreEnumerated() {
-            var squares = Board.Squares.ToList();
+            var squares = ChessBoard.Squares.ToList();
             Assert.AreEqual(64, squares.Count);
             Assert.AreEqual(Square.Make(0,0), squares[0]);
             Assert.AreEqual(Square.Make(7,7), squares[63]);
@@ -108,7 +178,7 @@ namespace KingTest {
 
         [Test]
         public void PawnCapturesAreGenerated() {
-            var captures = Rules.PawnCaptures().ToList();
+            var captures = Rules.PieceAttacks['P']().ToList();
             AssertOneCapture(Square.Make(4,2), captures[0]);
             AssertOneCapture(Square.Make(4,4), captures[1]);
         }
