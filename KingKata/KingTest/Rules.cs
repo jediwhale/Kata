@@ -5,86 +5,36 @@ namespace KingTest {
     public static class Rules {
         public static readonly Dictionary<char, IEnumerable<Func<Square, IEnumerable<Square>>>> PieceAttacks
             = new Dictionary<char, IEnumerable<Func<Square, IEnumerable<Square>>>> {
-                {'B', new Func<Square, IEnumerable<Square>>[] {
-                    DiagonalUpLeft, DiagonalUpRight, DiagonalDownLeft, DiagonalDownRight
+                {'B', new [] {
+                    Moves(Movement.UpLeft), Moves(Movement.UpRight), Moves(Movement.DownLeft), Moves(Movement.DownRight)
                 }},
                 {'K', new Func<Square, IEnumerable<Square>>[] {}},
-                {'N', new Func<Square, IEnumerable<Square>>[] {
-                    KnightUpUpLeft, KnightUpUpRight, KnightDownDownLeft, KnightDownDownRight, KnightUpLeftLeft, KnightUpRightRight, KnightDownLeftLeft, KnightDownRightRight
+                {'N', new [] {
+                    Move(Movement.UpUpLeft), Move(Movement.UpUpRight), Move(Movement.DownDownLeft), Move(Movement.DownDownRight),
+                    Move(Movement.UpLeftLeft), Move(Movement.UpRightRight), Move(Movement.DownLeftLeft), Move(Movement.DownRightRight)
                 }},
-                {'P', new Func<Square, IEnumerable<Square>>[] {
-                    PawnLeft, PawnRight
+                {'P', new [] {
+                    Move(Movement.DownLeft), Move(Movement.DownRight)
                 }},
-                {'Q', new Func<Square, IEnumerable<Square>>[] {
-                    StraightUp, StraightLeft, StraightRight, StraightDown, DiagonalUpLeft, DiagonalUpRight, DiagonalDownLeft, DiagonalDownRight
+                {'Q', new [] {
+                    Moves(Movement.Up), Moves(Movement.Left), Moves(Movement.Right), Moves(Movement.Down),
+                    Moves(Movement.UpLeft), Moves(Movement.UpRight), Moves(Movement.DownLeft), Moves(Movement.DownRight)
                 }},
-                {'R', new Func<Square, IEnumerable<Square>>[] {
-                    StraightUp, StraightLeft, StraightRight, StraightDown
+                {'R', new [] {
+                    Moves(Movement.Up), Moves(Movement.Left), Moves(Movement.Right), Moves(Movement.Down)
                 }}
             };
 
-        static IEnumerable<Square> KnightUpUpLeft(Square location) {
-            yield return location.Move(Movement.UpUpLeft);
+        static Func<Square, IEnumerable<Square>> Move(Movement movement) {
+            return location => SingleMove(location, movement);
         }
 
-        static IEnumerable<Square> KnightUpUpRight(Square location) {
-            yield return location.Move(Movement.UpUpRight);
+        static Func<Square, IEnumerable<Square>> Moves(Movement movement) {
+            return location => MultipleMoves(location, movement);
         }
 
-        static IEnumerable<Square> KnightDownDownLeft(Square location) {
-            yield return location.Move(Movement.DownDownLeft);
-        }
-
-        static IEnumerable<Square> KnightDownDownRight(Square location) {
-            yield return location.Move(Movement.DownDownRight);
-        }
-
-        static IEnumerable<Square> KnightUpLeftLeft(Square location) {
-            yield return location.Move(Movement.UpLeftLeft);
-        }
-
-        static IEnumerable<Square> KnightUpRightRight(Square location) {
-            yield return location.Move(Movement.UpRightRight);
-        }
-
-        static IEnumerable<Square> KnightDownLeftLeft(Square location) {
-            yield return location.Move(Movement.DownLeftLeft);
-        }
-
-        static IEnumerable<Square> KnightDownRightRight(Square location) {
-            yield return location.Move(Movement.DownRightRight);
-        }
-        
-        static IEnumerable<Square> StraightUp(Square location) {
-            return MultipleMoves(location, Movement.Up);
-        }
-        
-        static IEnumerable<Square> StraightLeft(Square location) {
-            return MultipleMoves(location, Movement.Left);
-        }
-        
-        static IEnumerable<Square> StraightRight(Square location) {
-            return MultipleMoves(location, Movement.Right);
-        }
-        
-        static IEnumerable<Square> StraightDown(Square location) {
-            return MultipleMoves(location, Movement.Down);
-        }
-        
-        static IEnumerable<Square> DiagonalUpLeft(Square location) {
-            return MultipleMoves(location, Movement.UpLeft);
-        }
-        
-        static IEnumerable<Square> DiagonalUpRight(Square location) {
-            return MultipleMoves(location, Movement.UpRight);
-        }
-        
-        static IEnumerable<Square> DiagonalDownLeft(Square location) {
-            return MultipleMoves(location, Movement.DownLeft);
-        }
-        
-        static IEnumerable<Square> DiagonalDownRight(Square location) {
-            return MultipleMoves(location, Movement.DownRight);
+        static IEnumerable<Square> SingleMove(Square location, Movement movement) {
+            yield return location.Move(movement);
         }
         
         static IEnumerable<Square> MultipleMoves(Square location, Movement movement) {
@@ -93,14 +43,6 @@ namespace KingTest {
                 current = current.Move(movement);
                 yield return current;
             }
-        }
-
-        static IEnumerable<Square> PawnLeft(Square location) {
-            yield return location.Move(Movement.DownLeft);
-        }
-
-        static IEnumerable<Square> PawnRight(Square location) {
-            yield return location.Move(Movement.DownRight);
         }
     }
 }
