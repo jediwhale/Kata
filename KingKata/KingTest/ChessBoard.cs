@@ -23,14 +23,14 @@ namespace KingTest {
         }
 
         bool DoesLineAttackKing(Func<Square, IEnumerable<Square>> lineOfAttack, Square location) {
-            return lineOfAttack(location).Select(ContentOfSquare).Aggregate(AggregateTargetPiece) == 'K';
+            return lineOfAttack(location).Select(PieceOnSquare).Aggregate(DetermineTargetPiece) == 'K';
         }
 
-        char ContentOfSquare(Square location) {
+        char PieceOnSquare(Square location) {
             return pieces.ContainsKey(location) ? pieces[location] : ' ';
         }
 
-        static char AggregateTargetPiece(char previous, char current) {
+        static char DetermineTargetPiece(char previous, char current) {
             return previous != ' ' ? previous : current;
         }
 
