@@ -16,10 +16,10 @@ namespace KingTest {
             }
         }
 
-        public bool IsKingInCheck => pieces.Select(IsPieceAttackingKing).Any(IsTrue);
+        public bool IsKingInCheck => pieces.Any(IsPieceAttackingKing);
 
         bool IsPieceAttackingKing(KeyValuePair<Square, char> pieceLocation) {
-            return Rules.PieceAttacks[pieceLocation.Value].Select(line => DoesLineAttackKing(line, pieceLocation.Key)).Any(IsTrue);
+            return Rules.PieceAttacks[pieceLocation.Value].Any(line => DoesLineAttackKing(line, pieceLocation.Key));
         }
 
         bool DoesLineAttackKing(Func<Square, IEnumerable<Square>> lineOfAttack, Square location) {
@@ -33,8 +33,6 @@ namespace KingTest {
         static char DetermineTargetPiece(char previous, char current) {
             return previous != ' ' ? previous : current;
         }
-
-        static bool IsTrue(bool result) { return result;}
 
         readonly Dictionary<Square, char> pieces = new Dictionary<Square, char>();
     }
