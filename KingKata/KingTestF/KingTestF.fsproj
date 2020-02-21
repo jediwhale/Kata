@@ -6,7 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="InCheck.fs" />
       <Compile Include="IntegrationTest.fs" />
+      <Compile Include="UnitTest.fs" />
     </ItemGroup>
 
     <ItemGroup>
