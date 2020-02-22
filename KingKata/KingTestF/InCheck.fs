@@ -22,10 +22,7 @@ let isValidIndex index = index >= 0 && index <= 7
 
 type Location = {Row: int; Column: int}
 let isOnBoard location = isValidIndex location.Row && isValidIndex location.Column
-let makeLocation row column =
-        if isValidIndex row && isValidIndex column
-        then {Row = row; Column = column}
-        else {Row = -999999999; Column = -999999999}
+let makeLocation row column = {Row = row; Column = column}
 let moveFrom location movement =
         makeLocation (location.Row + movement.RowMovement) (location.Column + movement.ColumnMovement)
     
