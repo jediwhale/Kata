@@ -21,13 +21,13 @@ let downRightRight = {RowMovement = 1; ColumnMovement = 2}
 let isValidIndex index = index >= 0 && index <= 7
 
 type Location = {Row: int; Column: int}
+let isOnBoard location = isValidIndex location.Row && isValidIndex location.Column
 let makeLocation row column =
         if isValidIndex row && isValidIndex column
         then {Row = row; Column = column}
         else {Row = -999999999; Column = -999999999}
 let moveFrom location movement =
         makeLocation (location.Row + movement.RowMovement) (location.Column + movement.ColumnMovement)
-let isOnBoard location = isValidIndex location.Row && isValidIndex location.Column
     
 let singleMove location movement = seq {moveFrom location movement}
 let move movement = fun location -> singleMove location movement
@@ -51,7 +51,7 @@ let linesOfAttack =
     |> Map.ofList
     
 let makeSquares rowIndex row =
-    let makeSquare columnIndex piece = ({Row = rowIndex; Column = columnIndex;}, piece)
+    let makeSquare columnIndex piece = (makeLocation rowIndex columnIndex, piece)
     row |> Seq.mapi makeSquare
     
 let hasPiece (_, piece) = piece <> ' '
